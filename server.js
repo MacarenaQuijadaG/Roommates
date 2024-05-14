@@ -2,10 +2,6 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
-// ruta la cual levanta el proyecto el index.html
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
-});
 //puerto por donde se muestra el server.js con nodemon
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
@@ -15,9 +11,31 @@ app.listen(PORT, () => {
 //Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
  // Rutas
+// --   / GET: Debe devolver el documento HTML disponible en el apoyo.
+// ruta la cual levanta el proyecto el index.html
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
+
+//  --   /roommate POST: Almacena un nuevo roommate ocupando random user.
+import { agregar } from './modulo/agregar.js';
+
+app.use(express.json());
+
+
+app.post('/roommate', async (req, res) => {
+    try {
+        // Verificamos que el archivo roommates.json existe, si no existe lo creamos con un arreglo vacío
+        if (!fs.existsSync("roommates.json")) {
+            fs.writeFileSync('roommates.json', '{"roommates": []}', 'utf8');
+        };
+        const result = await agregar();
+        res.send(" creado con éxito!!", result);
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+});
 /*
-    / GET: Debe devolver el documento HTML disponible en el apoyo.
-/roommate POST: Almacena un nuevo roommate ocupando random user.
 /roommate GET: Devuelve todos los roommates almacenados.
 /gastos GET: Devuelve el historial con todos los gastos registrados.
 /gasto PUT: Edita los datos de un gasto.

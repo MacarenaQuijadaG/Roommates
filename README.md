@@ -1,4 +1,4 @@
-# Banco Solar
+# Roommates
 
 ## Descripción
 Es bien sabido que entre las mejores recomendaciones que un programador amateur puede recibir para mejorar sus habilidades es 
@@ -11,7 +11,7 @@ Es bien sabido que entre las mejores recomendaciones que un programador amateur 
 - Modificar la información correspondiente a un gasto.
 - Eliminar gastos del historial.
 
-  las rutas que debe contener son:
+ ### las rutas que debe contener son:
 - / GET: Debe devolver el documento HTML disponible en el apoyo.
 - /roommate POST: Almacena un nuevo roommate ocupando random user.
 - /roommate GET: Devuelve todos los roommates almacenados.

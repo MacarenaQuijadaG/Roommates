@@ -201,11 +201,17 @@ Articulos de limpieza</textarea
 
       const nuevoRoommate = () => {
         fetch("http://localhost:3000/roommate", { method: "POST" })
-          .then((res) => res.json())
-          .then(() => {
-            imprimir();
-          });
+          .then((res) => res.json()) 
+          .then((data) => {
+              console.log(data.message); 
+              console.log(data.result); 
+              imprimir();
+        })
+        .catch((error) => {
+            console.error("Error:", error); //añadido para saber el error
+        });
       };
+
 
       const agregarGasto = async () => {
         const roommateSelected = $("#roommatesSelect").val();

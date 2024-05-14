@@ -3,5 +3,16 @@
     "axios": "^1.6.8",
     "express": "^4.19.2",
     "nodemon": "^3.1.0"
-  }
+  },
+  "name": "prueba---roommates",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Macarena Quijada",
+  "license": "ISC",
+  "description": ""
 }

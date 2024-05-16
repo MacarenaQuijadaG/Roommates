@@ -1,36 +1,29 @@
 // apis a utilizar
 //https://randomuser.me/api
 const axios = require('axios');
-const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
-const agregar = async () => {
+async function obtener() {
     try {
-        if (!fs.existsSync("roommates.json")) {
-            fs.writeFileSync('roommates.json', '{"roommates": []}', 'utf8');
-        }
-        
-        const { data } = await axios.get('https://randomuser.me/api');
-        const random = data.results[0];
+        const response = await axios.get("https://randomuser.me/api");
+        const { data } = response;
+        const randomUser = data.results[0];
 
-        const id = uuidv4().slice(24);
+        const uuid = uuidv4();
+        const id = uuid.slice(0, 6);
 
         const roommate = {
             id: id,
-            nombre: random.name.first,
-            debe: '',
-            recibe: '',
+            nombre: randomUser.name.first,
+            email: randomUser.email,
+            debe: 0,
+            recibe: 0,
+            total: 0,
         };
-
-        const { roommates } = JSON.parse(fs.readFileSync("roommates.json", "utf8"));
-        roommates.push(roommate);
-
-        fs.writeFileSync("roommates.json", JSON.stringify({ roommates }));
-        console.log("Creado");
-        return roommates;
+        return roommate;
     } catch (error) {
-        throw new Error(error.message);
+        throw error;
     }
-};
+}
 
-module.exports = { agregar };
+module.exports = {obtener};

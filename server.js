@@ -1,99 +1,223 @@
 const express = require('express');
 const fs = require('fs');
-//import { agregar } from './modulo/agregar.js';
-const { agregar } = require('./modulo/agregar.js');
-
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
+const { format } = require('date-fns');
+const funcion = require('./modulo/agregar.js'); // asegúrate que la ruta y el archivo sean correctos
 const app = express();
-const PORT = 3000;
-// salida del servidor
+
+// no se puede ejecutar nodemon por problemas de ejecucion del script esta desabilitada en el sistema operativo
+//Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+  
+ // puerto 3000 definido para la salida de proyecto
+ const PORT = process.env.PORT || 3000;
+ 
+// Puerto de salida
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-// no se puede ejecutar nodemon por problemas de ejecucion del script esta desabilitada en el sistema operativo
-//Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-
+ // Middleware
+ app.use(express.json());
+ 
  // Rutas
-
-// / GET: Debe devolver el documento HTML disponible en el apoyo.
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
-// middleware
-app.use(express.json());
-
-//---  /roommate POST: Almacena un nuevo roommate ocupando random user.
-app.post('/roommate', async (req, res) => {
-    try {
-      if (!fs.existsSync("roommates.json")) {
-           fs.writeFileSync('roommates.json', '{"roommates": []}', 'utf8');
+ 
+ // / GET: Debe devolver el documento HTML disponible en el apoyo.
+ app.get("/", (req, res) => {
+     res.sendFile(path.join(__dirname, "index.html"));
+ });
+ 
+ // /roommate POST: Almacena un nuevo roommate ocupando random user.
+ app.post('/roommate', async (req, res) => {
+     try {
+         const filePath = path.join(__dirname, 'roommates.json');
+         
+         if (!fs.existsSync(filePath)) {
+             fs.writeFileSync(filePath, JSON.stringify({ roommates: [] }));
+         }
+ 
+         const nuevo = await funcion.obtener();
+         const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+         data.roommates.push(nuevo);
+         fs.writeFileSync(filePath, JSON.stringify(data));
+         res.status(201).json({ message: "Se ha agregado un nuevo roommate", roommate: nuevo });
+ 
+     } catch (err) {
+         console.log("Error: ", err);
+         res.status(500).json({ error: "Error al agregar un nuevo roommate" });
      }
-        const result = await agregar();
-        res.send("Creado con éxito: " + JSON.stringify(result));
-    } catch (error) {
-        res.status(500).send(error.message);
-    }
-});
-// --- /roommate GET: Devuelve todos los roommates almacenados.
-app.get('/roommate', (req, res) => {
+ });
+ 
+ // /roommate GET: Devuelve todos los roommates almacenados.
+ app.get('/roommates', async (req, res) => {
+     try {
+         const filePath = path.join(__dirname, 'roommates.json');
+         const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+         res.json(data);
+     } catch (err) {
+         console.log("Error: ", err);
+         res.status(500).json({ error: "Error al obtener los roommates" });
+     }
+ });
+ 
+ // /gastos GET: Devuelve el historial con todos los gastos registrados.
+ app.get('/gastos', async (req, res) => {
+     try {
+         const filePath = path.join(__dirname, 'gastos.json');
+         const gastosData = JSON.parse(fs.readFileSync(filePath, "utf8"));
+         res.json(gastosData);
+     } catch (err) {
+         console.log("Error: ", err);
+         res.status(500).json({ error: "Error al obtener los gastos" });
+     }
+ });
+ 
+ // /gasto POST: Agrega un nuevo gasto.
+ app.post('/gasto', async (req, res) => {
+     try {
+         const uuid = uuidv4();
+         const id = uuid.slice(0, 6);
+ 
+         const fecha = new Date();
+         const formattedDate = format(fecha, 'dd/MM/yyyy');
+ 
+         const nuevoGasto = req.body;
+         nuevoGasto.fecha = formattedDate;
+         nuevoGasto.id = id;
+ 
+         const montoTotal = req.body.monto;
+         const comprador = req.body.roommate;
+         const descripcion = req.body.descripcion;
+ 
+         if (!descripcion) {
+             return res.status(400).json({ error: "Por favor ingresar una descripción" });
+         }
+ 
+         const roommatesFilePath = path.join(__dirname, 'roommates.json');
+         const data = JSON.parse(fs.readFileSync(roommatesFilePath, "utf8"));
+         const roommates = data.roommates;
+         const totalRoommates = roommates.length;
+         const montoPersona = Math.floor(montoTotal / totalRoommates);
+ 
+         roommates.forEach(roommate => {
+             if (roommate.nombre === comprador) {
+                 roommate.recibe += montoTotal - montoPersona;
+             } else {
+                 roommate.debe += montoPersona;
+             }
+         });
+ 
+         fs.writeFileSync(roommatesFilePath, JSON.stringify(data));
+ 
+         const gastosFilePath = path.join(__dirname, 'gastos.json');
+         if (!fs.existsSync(gastosFilePath)) {
+             fs.writeFileSync(gastosFilePath, JSON.stringify({ gastos: [] }));
+         }
+ 
+         const gastosData = JSON.parse(fs.readFileSync(gastosFilePath, "utf8"));
+         gastosData.gastos.push(nuevoGasto);
+         fs.writeFileSync(gastosFilePath, JSON.stringify(gastosData));
+         res.status(201).json({ message: "Se ha agregado un nuevo gasto", gasto: nuevoGasto });
+ 
+     } catch (err) {
+         console.log("Error: ", err);
+         res.status(500).json({ error: "Error al agregar un nuevo gasto" });
+     }
+ });
+
+ 
+ // /gasto DELETE: Elimina un gasto del historial.
+ app.delete('/gasto/:id', async (req, res) => {
     try {
-        const roommates = JSON.parse(fs.readFileSync("roommates.json", "utf8")).roommates;
-        res.json({ roommates });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+        //cont id = req.query.id;
+        const id = req.params.id;
+
+        const gastosFilePath = path.join(__dirname, 'gastos.json');
+        const gastosData = JSON.parse(fs.readFileSync(gastosFilePath, "utf8"));
+        const borrarGasto = gastosData.gastos.find(gasto => gasto.id === id);
+        if (!borrarGasto) {
+            return res.status(404).json({ message: "El gasto no existe" });
+        }
+
+        const montoTotal = borrarGasto.monto;
+        const roommateComprador = borrarGasto.roommate;
+
+        const roommatesFilePath = path.join(__dirname, 'roommates.json');
+        const roommatesData = JSON.parse(fs.readFileSync(roommatesFilePath, "utf8"));
+        const roommates = roommatesData.roommates;
+        const totalRoommates = roommates.length;
+        const montoPersona = Math.floor(montoTotal / totalRoommates);
+
+        roommates.forEach(roommate => {
+            if (roommate.nombre === roommateComprador) {
+                roommate.recibe -= montoTotal - montoPersona;
+            } else {
+                roommate.debe -= montoPersona;
+            }
+        });
+
+        fs.writeFileSync(roommatesFilePath, JSON.stringify(roommatesData));
+
+        gastosData.gastos = gastosData.gastos.filter(gasto => gasto.id !== id);
+        fs.writeFileSync(gastosFilePath, JSON.stringify(gastosData));
+        res.json({ message: "eliminado correctamente" });
+
+    } catch (err) {
+        console.log("Error al eliminar: ", err);
+        //res.status(500).json({ error: "Error al eliminar" });
     }
 });
 
-// --- /gastos GET: Devuelve el historial con todos los gastos registrados.
-app.get('/gastos', (req, res) => {
-  try {
-      const gastos = JSON.parse(fs.readFileSync("gastos.json", "utf8"));
-      res.json({ gastos }); // Devuelve los gastos como JSON
-  } catch (error) {
-      res.status(500).json({ error: error.message });
-  }
-});
-
-//---   /gasto PUT: Edita los datos de un gasto.
-app.put('/gasto/:id', (req, res) => {
-  try {
-      
-      const { id } = req.params;
-      const { roommate, descripcion, monto } = req.body;
-      let gastos = JSON.parse(fs.readFileSync("gastos.json", "utf8"));
-      const index = gastos.findIndex(gasto => gasto.id === id);
-      
-      if (index !== -1) {
-          // actualiza los combios
-          gastos[index] = { id, roommate, descripcion, monto };
-          fs.writeFileSync("gastos.json", JSON.stringify(gastos));
-          res.json({ message: 'exitosamente añadido', gasto: gastos[index] });
-      } else {
-          res.status(404).json({ error: 'no encontrado o no existe' });
-      }
-  } catch (error) {
-      res.status(500).json({ error: error.message });
-  }
-});
-
-// ----  /gasto DELETE: Elimina un gasto del historial.
-
-app.delete('/gasto/:id', (req, res) => {
-  try {
-      const { id } = req.params;
-      
-      let gastos = JSON.parse(fs.readFileSync("gastos.json", "utf8"));
-     
-      gastos = gastos.filter(gasto => gasto.id !== id);
-      fs.writeFileSync("gastos.json", JSON.stringify(gastos));
-      
-      res.json({ message: 'Gasto eliminado exitosamente' });
-  } catch (error) {
-      res.status(500).json({ error: error.message });
-  }
-});
-
-
-
-
-
+ 
+ // /gasto PUT: Edita los datos de un gasto.
+ app.put('/gasto/:id', async (req, res) => {
+     try {
+        //cont id = req.query.id;
+         const id = req.params.id;
+         const actualizacion = req.body;
+ 
+         const descripcion = actualizacion.descripcion;
+         if (!descripcion) {
+             return res.status(400).json({ error: "Por favor ingresar una descripción" });
+         }
+ 
+         const gastosFilePath = path.join(__dirname, 'gastos.json');
+         const gastosData = JSON.parse(fs.readFileSync(gastosFilePath, "utf8"));
+         const index = gastosData.gastos.findIndex(gasto => gasto.id === id);
+         if (index === -1) {
+             return res.status(404).json({ message: "no existe" });
+         }
+ 
+         const antiguoGasto = gastosData.gastos[index];
+         const antiguoMonto = antiguoGasto.monto;
+         const antiguoRoommate = antiguoGasto.roommate;
+         actualizacion.id = id;
+ 
+         const operacion = actualizacion.monto - antiguoMonto;
+ 
+         gastosData.gastos[index] = actualizacion;
+         fs.writeFileSync(gastosFilePath, JSON.stringify(gastosData));
+ 
+         const roommatesFilePath = path.join(__dirname, 'roommates.json');
+         const roommatesData = JSON.parse(fs.readFileSync(roommatesFilePath, "utf8"));
+         const roommates = roommatesData.roommates;
+         const totalRoommates = roommates.length;
+         const montoPersona = Math.floor(operacion / totalRoommates);
+ 
+         roommates.forEach(roommate => {
+             if (roommate.nombre === antiguoRoommate) {
+                 roommate.recibe += operacion - montoPersona;
+             } else {
+                 roommate.debe += montoPersona;
+             }
+         });
+ 
+         fs.writeFileSync(roommatesFilePath, JSON.stringify(roommatesData));
+ 
+         res.json({ message: "se actualizado correctamente" });
+     } catch (err) {
+         console.log("Error al actualizar el gasto: ", err);
+         //res.status(500).json({ error: "Error al actualizar el gasto" });
+     }
+ });
+ 

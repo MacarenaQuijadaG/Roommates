@@ -126,48 +126,6 @@ app.listen(PORT, () => {
  });
 
  
- // /gasto DELETE: Elimina un gasto del historial.
- app.delete('/gasto/:id', async (req, res) => {
-    try {
-        //cont id = req.query.id;
-        const id = req.params.id;
-
-        const gastosFilePath = path.join(__dirname, 'gastos.json');
-        const gastosData = JSON.parse(fs.readFileSync(gastosFilePath, "utf8"));
-        const borrarGasto = gastosData.gastos.find(gasto => gasto.id === id);
-        if (!borrarGasto) {
-            return res.status(404).json({ message: "El gasto no existe" });
-        }
-
-        const montoTotal = borrarGasto.monto;
-        const roommateComprador = borrarGasto.roommate;
-
-        const roommatesFilePath = path.join(__dirname, 'roommates.json');
-        const roommatesData = JSON.parse(fs.readFileSync(roommatesFilePath, "utf8"));
-        const roommates = roommatesData.roommates;
-        const totalRoommates = roommates.length;
-        const montoPersona = Math.floor(montoTotal / totalRoommates);
-
-        roommates.forEach(roommate => {
-            if (roommate.nombre === roommateComprador) {
-                roommate.recibe -= montoTotal - montoPersona;
-            } else {
-                roommate.debe -= montoPersona;
-            }
-        });
-
-        fs.writeFileSync(roommatesFilePath, JSON.stringify(roommatesData));
-
-        gastosData.gastos = gastosData.gastos.filter(gasto => gasto.id !== id);
-        fs.writeFileSync(gastosFilePath, JSON.stringify(gastosData));
-        res.json({ message: "eliminado correctamente" });
-
-    } catch (err) {
-        console.log("Error al eliminar: ", err);
-        //res.status(500).json({ error: "Error al eliminar" });
-    }
-});
-
  
  // /gasto PUT: Edita los datos de un gasto.
  app.put('/gasto/:id', async (req, res) => {
@@ -221,3 +179,45 @@ app.listen(PORT, () => {
      }
  });
  
+
+  // /gasto DELETE: Elimina un gasto del historial.
+  app.delete('/gasto/:id', async (req, res) => {
+    try {
+        //cont id = req.query.id;
+        const id = req.params.id;
+
+        const gastosFilePath = path.join(__dirname, 'gastos.json');
+        const gastosData = JSON.parse(fs.readFileSync(gastosFilePath, "utf8"));
+        const borrarGasto = gastosData.gastos.find(gasto => gasto.id === id);
+        if (!borrarGasto) {
+            return res.status(404).json({ message: "El gasto no existe" });
+        }
+
+        const montoTotal = borrarGasto.monto;
+        const roommateComprador = borrarGasto.roommate;
+
+        const roommatesFilePath = path.join(__dirname, 'roommates.json');
+        const roommatesData = JSON.parse(fs.readFileSync(roommatesFilePath, "utf8"));
+        const roommates = roommatesData.roommates;
+        const totalRoommates = roommates.length;
+        const montoPersona = Math.floor(montoTotal / totalRoommates);
+
+        roommates.forEach(roommate => {
+            if (roommate.nombre === roommateComprador) {
+                roommate.recibe -= montoTotal - montoPersona;
+            } else {
+                roommate.debe -= montoPersona;
+            }
+        });
+
+        fs.writeFileSync(roommatesFilePath, JSON.stringify(roommatesData));
+
+        gastosData.gastos = gastosData.gastos.filter(gasto => gasto.id !== id);
+        fs.writeFileSync(gastosFilePath, JSON.stringify(gastosData));
+        res.json({ message: "eliminado correctamente" });
+
+    } catch (err) {
+        console.log("Error al eliminar: ", err);
+        //res.status(500).json({ error: "Error al eliminar" });
+    }
+});

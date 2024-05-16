@@ -43,8 +43,8 @@ app.listen(PORT, () => {
          res.status(201).json({ message: "Se ha agregado un nuevo roommate", roommate: nuevo });
  
      } catch (err) {
-         console.log("Error: ", err);
-         res.status(500).json({ error: "Error al agregar un nuevo roommate" });
+         console.log("error al agregar: ", err);
+         //res.status(500).json({ error: "Error al agregar un nuevo roommate" });
      }
  });
  
@@ -55,8 +55,8 @@ app.listen(PORT, () => {
          const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
          res.json(data);
      } catch (err) {
-         console.log("Error: ", err);
-         res.status(500).json({ error: "Error al obtener los roommates" });
+         console.log("error al obtener: ", err);
+         //res.status(500).json({ error: "Error al obtener los roommates" });
      }
  });
  
@@ -120,8 +120,8 @@ app.listen(PORT, () => {
          res.status(201).json({ message: "Se ha agregado un nuevo gasto", gasto: nuevoGasto });
  
      } catch (err) {
-         console.log("Error: ", err);
-         res.status(500).json({ error: "Error al agregar un nuevo gasto" });
+         console.log("error al agregar un gasto: ", err);
+         //res.status(500).json({ error: "Error al agregar un nuevo gasto" });
      }
  });
 

@@ -46,7 +46,7 @@ instalar las dependencias con npm i creando la carpeta node_modules, la cual con
 
 Instrucciones y ejemplos para ejecutar el conjunto de pruebas.
 
-####  node serverExpress.js complementando con esta informacion:
+####  El server se levanta con esta instrucción :
 
 - nodemon server.js
 

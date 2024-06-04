@@ -18,7 +18,7 @@ Es bien sabido que entre las mejores recomendaciones que un programador amateur 
 - /gastos GET: Devuelve el historial con todos los gastos registrados.
 - /gasto PUT: Edita los datos de un gasto.
 - /gasto DELETE: Elimina un gasto del historial.
-## Visuales 
+
 
 
 ## Empezando 🚀

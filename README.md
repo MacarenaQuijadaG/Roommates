@@ -1,8 +1,6 @@
 # Roommates
 
 ## Descripción
-Es bien sabido que entre las mejores recomendaciones que un programador amateur puede recibir para mejorar sus habilidades es 
-“crear aplicaciones”, sin darle tanta importancia a la temática a elaborar, sino que solo basta con un problema para desarrollar una solución digital.
 
 - Almacenar roommates nuevos ocupando [random user](https://randomuser.me/api).
 - Devolver todos los roommates almacenados.
@@ -11,8 +9,8 @@ Es bien sabido que entre las mejores recomendaciones que un programador amateur 
 - Modificar la información correspondiente a un gasto.
 - Eliminar gastos del historial.
 
- ### las rutas que debe contener son:
-- / GET: Debe devolver el documento HTML disponible en el apoyo.
+ ### las rutas que contiene son:
+- / GET: Devuelve el documento HTML disponible en el apoyo.
 - /roommate POST: Almacena un nuevo roommate ocupando random user.
 - /roommate GET: Devuelve todos los roommates almacenados.
 - /gastos GET: Devuelve el historial con todos los gastos registrados.

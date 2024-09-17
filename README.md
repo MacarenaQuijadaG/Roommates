@@ -30,7 +30,7 @@ Lista de software y herramientas, incluyendo versiones, que necesitas para insta
 -  "express": "^4.19.2",
 -  "node": "^18.0.4",
 -  "axios": "^1.6.8",
--  "nodemon": "^3.1.0"
+-  "nodemon": "^3.1.0" 
 
         
 ### Instalación 🔧
